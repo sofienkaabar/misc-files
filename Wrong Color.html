@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Wrong Color</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        :root {
+            --red: #FF3B5C;
+            --blue: #3B82F6;
+            --green: #10B981;
+            --yellow: #FBBF24;
+            --purple: #8B5CF6;
+            --orange: #F97316;
+            --bg-dark: #0a0a0f;
+            --bg-card: #12121a;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+        }
+
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            pointer-events: none;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .orb-1 {
+            width: 300px;
+            height: 300px;
+            background: var(--purple);
+            top: -100px;
+            left: -100px;
+        }
+
+        .orb-2 {
+            width: 250px;
+            height: 250px;
+            background: var(--blue);
+            bottom: -50px;
+            right: -50px;
+            animation-delay: -4s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(30px, 30px); }
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 3.5rem;
+            letter-spacing: 4px;
+            background: linear-gradient(135deg, #fff 0%, #888 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.75rem;
+            letter-spacing: 3px;
+            margin-top: 5px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.65rem;
+            color: #555;
+            letter-spacing: 2px;
+            margin-top: 5px;
+        }
+
+        .game-area {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 40px 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-area::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+        }
+
+        .timer-container {
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .timer-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--red), var(--yellow), var(--green));
+            border-radius: 3px;
+            transition: width 0.1s linear;
+            width: 100%;
+        }
+
+        .word-display {
+            text-align: center;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .instruction {
+            font-size: 0.8rem;
+            color: #888;
+            letter-spacing: 3px;
+            margin-bottom: 15px;
+        }
+
+        .color-word {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 5.5rem;
+            letter-spacing: 6px;
+            transition: all 0.15s ease;
+            text-shadow: 0 0 60px currentColor;
+        }
+
+        .color-word.correct {
+            animation: pulse-correct 0.3s ease;
+        }
+
+        .color-word.wrong {
+            animation: shake 0.4s ease;
+        }
+
+        @keyframes pulse-correct {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-15px); }
+            40% { transform: translateX(15px); }
+            60% { transform: translateX(-10px); }
+            80% { transform: translateX(10px); }
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn-choice {
+            flex: 1;
+            padding: 22px 10px;
+            border: none;
+            border-radius: 16px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.6rem;
+            letter-spacing: 3px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            position: relative;
+            overflow: hidden;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .btn-choice::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .btn-choice:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+        }
+
+        .btn-choice:active {
+            transform: translateY(1px);
+        }
+
+        .start-screen {
+            text-align: center;
+        }
+
+        .start-screen h2 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.8rem;
+            color: #fff;
+            letter-spacing: 3px;
+            margin-bottom: 25px;
+        }
+
+        .rules {
+            color: #888;
+            font-size: 0.85rem;
+            line-height: 2;
+            margin-bottom: 30px;
+        }
+
+        .rules strong {
+            color: #fff;
+        }
+
+        .example {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+        }
+
+        .btn-start {
+            width: 100%;
+            padding: 22px;
+            background: linear-gradient(135deg, var(--green), #059669);
+            border: none;
+            border-radius: 16px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: 4px;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 8px 30px rgba(16, 185, 129, 0.3);
+            transition: all 0.15s ease;
+        }
+
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(16, 185, 129, 0.4);
+        }
+
+        .game-over {
+            text-align: center;
+        }
+
+        .game-over h2 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.5rem;
+            color: var(--red);
+            letter-spacing: 4px;
+            margin-bottom: 10px;
+        }
+
+        .final-score {
+            font-size: 4rem;
+            font-weight: 700;
+            color: #fff;
+            margin: 20px 0;
+        }
+
+        .final-score span {
+            font-size: 1rem;
+            color: #555;
+            display: block;
+        }
+
+        .high-score-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            background: linear-gradient(135deg, var(--yellow), var(--orange));
+            border-radius: 20px;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            color: #000;
+            margin-bottom: 20px;
+            animation: glow 1s ease infinite alternate;
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 0 20px rgba(251, 191, 36, 0.3); }
+            to { box-shadow: 0 0 30px rgba(251, 191, 36, 0.6); }
+        }
+
+        .speed-indicator {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 0.7rem;
+            color: #555;
+            letter-spacing: 1px;
+        }
+
+        .speed-indicator span {
+            color: var(--yellow);
+            font-weight: 700;
+        }
+
+        .streak {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            font-size: 0.7rem;
+            color: #555;
+            letter-spacing: 1px;
+        }
+
+        .streak span {
+            color: var(--orange);
+            font-weight: 700;
+        }
+
+        .flash-correct {
+            animation: flash-green 0.2s ease;
+        }
+
+        .flash-wrong {
+            animation: flash-red 0.3s ease;
+        }
+
+        @keyframes flash-green {
+            0% { background: var(--bg-card); }
+            50% { background: rgba(16, 185, 129, 0.2); }
+            100% { background: var(--bg-card); }
+        }
+
+        @keyframes flash-red {
+            0% { background: var(--bg-card); }
+            50% { background: rgba(255, 59, 92, 0.2); }
+            100% { background: var(--bg-card); }
+        }
+
+        @media (max-width: 500px) {
+            .title { font-size: 2.8rem; }
+            .color-word { font-size: 4.5rem; }
+            .btn-choice { padding: 25px 10px; font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    
+    <div class="container">
+        <header class="header">
+            <h1 class="title">WRONG COLOR</h1>
+            <p class="subtitle">DON'T READ — SEE</p>
+        </header>
+
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value" id="score">0</div>
+                <div class="stat-label">SCORE</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="best">0</div>
+                <div class="stat-label">BEST</div>
+            </div>
+        </div>
+
+        <div class="game-area" id="gameArea">
+            <!-- Start Screen -->
+            <div class="start-screen" id="startScreen">
+                <h2>HOW TO PLAY</h2>
+                <div class="rules">
+                    You see a word painted in a <strong>different color</strong>:<br><br>
+                    <span class="example" style="color: var(--red);">GREEN</span><br><br>
+                    <strong>Tap the COLOR you see, not the word!</strong><br>
+                    The answer above is <strong>RED</strong>
+                </div>
+                <button class="btn-start" id="startBtn">START</button>
+            </div>
+
+            <!-- Game Screen -->
+            <div id="gameScreen" style="display: none;">
+                <div class="streak">STREAK <span id="streak">0</span></div>
+                <div class="speed-indicator">SPEED <span id="speedLevel">1</span>x</div>
+                
+                <div class="timer-container">
+                    <div class="timer-bar" id="timerBar"></div>
+                </div>
+                
+                <div class="word-display">
+                    <div class="instruction">TAP THE COLOR</div>
+                    <div class="color-word" id="colorWord">RED</div>
+                </div>
+
+                <div class="buttons">
+                    <button class="btn-choice" id="btnLeft">RED</button>
+                    <button class="btn-choice" id="btnRight">BLUE</button>
+                </div>
+            </div>
+
+            <!-- Game Over Screen -->
+            <div class="game-over" id="gameOver" style="display: none;">
+                <h2>GAME OVER</h2>
+                <div id="newHighScore" class="high-score-badge" style="display: none;">🏆 NEW HIGH SCORE!</div>
+                <div class="final-score">
+                    <span>FINAL SCORE</span>
+                    <span id="finalScore">0</span>
+                </div>
+                <button class="btn-start" id="restartBtn">PLAY AGAIN</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        const state = {
+            score: 0,
+            best: parseInt(localStorage.getItem('wrongColorBest')) || 0,
+            streak: 0,
+            speed: 1,
+            timeLeft: 100,
+            isPlaying: false,
+            currentWord: null,
+            currentColor: null,
+            correctAnswer: null,
+            timerInterval: null,
+            baseTime: 5000,
+        };
+
+        // Colors configuration
+        const colors = [
+            { name: 'RED', hex: '#FF3B5C' },
+            { name: 'BLUE', hex: '#3B82F6' },
+            { name: 'GREEN', hex: '#10B981' },
+            { name: 'YELLOW', hex: '#FBBF24' },
+            { name: 'PURPLE', hex: '#8B5CF6' },
+            { name: 'ORANGE', hex: '#F97316' },
+        ];
+
+        // DOM elements
+        const elements = {
+            score: document.getElementById('score'),
+            best: document.getElementById('best'),
+            startScreen: document.getElementById('startScreen'),
+            gameScreen: document.getElementById('gameScreen'),
+            gameOver: document.getElementById('gameOver'),
+            gameArea: document.getElementById('gameArea'),
+            colorWord: document.getElementById('colorWord'),
+            timerBar: document.getElementById('timerBar'),
+            btnLeft: document.getElementById('btnLeft'),
+            btnRight: document.getElementById('btnRight'),
+            startBtn: document.getElementById('startBtn'),
+            restartBtn: document.getElementById('restartBtn'),
+            finalScore: document.getElementById('finalScore'),
+            newHighScore: document.getElementById('newHighScore'),
+            streak: document.getElementById('streak'),
+            speedLevel: document.getElementById('speedLevel'),
+        };
+
+        // Initialize
+        elements.best.textContent = state.best;
+
+        // Event listeners
+        elements.startBtn.addEventListener('click', startGame);
+        elements.restartBtn.addEventListener('click', startGame);
+        elements.btnLeft.addEventListener('click', () => handleAnswer('left'));
+        elements.btnRight.addEventListener('click', () => handleAnswer('right'));
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (!state.isPlaying) {
+                if (e.key === ' ' || e.key === 'Enter') {
+                    startGame();
+                }
+                return;
+            }
+            
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+                handleAnswer('left');
+            } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+                handleAnswer('right');
+            }
+        });
+
+        function startGame() {
+            state.score = 0;
+            state.streak = 0;
+            state.speed = 1;
+            state.timeLeft = 100;
+            state.isPlaying = true;
+            
+            elements.score.textContent = '0';
+            elements.streak.textContent = '0';
+            elements.startScreen.style.display = 'none';
+            elements.gameOver.style.display = 'none';
+            elements.gameScreen.style.display = 'block';
+            elements.speedLevel.textContent = '1';
+            
+            nextRound();
+            startTimer();
+        }
+
+        function nextRound() {
+            // Pick random word and color (must be different)
+            let wordIndex = Math.floor(Math.random() * colors.length);
+            let colorIndex;
+            do {
+                colorIndex = Math.floor(Math.random() * colors.length);
+            } while (colorIndex === wordIndex);
+            
+            state.currentWord = colors[wordIndex];
+            state.currentColor = colors[colorIndex];
+            
+            // The correct answer is always the COLOR (not the word)
+            state.correctAnswer = state.currentColor.name;
+            
+            // Update word display
+            elements.colorWord.textContent = state.currentWord.name;
+            elements.colorWord.style.color = state.currentColor.hex;
+            
+            // Set up buttons - one is the color (correct), one is the word (trap)
+            const correctIsLeft = Math.random() > 0.5;
+            
+            if (correctIsLeft) {
+                elements.btnLeft.textContent = state.currentColor.name;
+                elements.btnLeft.style.background = `linear-gradient(135deg, ${state.currentColor.hex}, ${darkenColor(state.currentColor.hex)})`;
+                elements.btnLeft.style.boxShadow = `0 8px 30px ${state.currentColor.hex}40`;
+                elements.btnLeft.dataset.answer = 'correct';
+                
+                elements.btnRight.textContent = state.currentWord.name;
+                elements.btnRight.style.background = `linear-gradient(135deg, ${state.currentWord.hex}, ${darkenColor(state.currentWord.hex)})`;
+                elements.btnRight.style.boxShadow = `0 8px 30px ${state.currentWord.hex}40`;
+                elements.btnRight.dataset.answer = 'wrong';
+            } else {
+                elements.btnRight.textContent = state.currentColor.name;
+                elements.btnRight.style.background = `linear-gradient(135deg, ${state.currentColor.hex}, ${darkenColor(state.currentColor.hex)})`;
+                elements.btnRight.style.boxShadow = `0 8px 30px ${state.currentColor.hex}40`;
+                elements.btnRight.dataset.answer = 'correct';
+                
+                elements.btnLeft.textContent = state.currentWord.name;
+                elements.btnLeft.style.background = `linear-gradient(135deg, ${state.currentWord.hex}, ${darkenColor(state.currentWord.hex)})`;
+                elements.btnLeft.style.boxShadow = `0 8px 30px ${state.currentWord.hex}40`;
+                elements.btnLeft.dataset.answer = 'wrong';
+            }
+            
+            // Reset timer
+            state.timeLeft = 100;
+            elements.timerBar.style.width = '100%';
+        }
+
+        function darkenColor(hex) {
+            // Simple color darkening
+            const num = parseInt(hex.slice(1), 16);
+            const r = Math.max(0, (num >> 16) - 40);
+            const g = Math.max(0, ((num >> 8) & 0x00FF) - 40);
+            const b = Math.max(0, (num & 0x0000FF) - 40);
+            return `#${(r << 16 | g << 8 | b).toString(16).padStart(6, '0')}`;
+        }
+
+        function startTimer() {
+            const tickRate = 50;
+            const speedMultiplier = 1 + (state.speed - 1) * 0.12;
+            const decreasePerTick = (100 / (state.baseTime / tickRate)) * speedMultiplier;
+            
+            clearInterval(state.timerInterval);
+            state.timerInterval = setInterval(() => {
+                state.timeLeft -= decreasePerTick;
+                elements.timerBar.style.width = Math.max(0, state.timeLeft) + '%';
+                
+                if (state.timeLeft <= 0) {
+                    gameOver();
+                }
+            }, tickRate);
+        }
+
+        function handleAnswer(side) {
+            if (!state.isPlaying) return;
+            
+            const btn = side === 'left' ? elements.btnLeft : elements.btnRight;
+            const isCorrect = btn.dataset.answer === 'correct';
+            
+            if (isCorrect) {
+                state.streak++;
+                state.score += 10 + Math.floor(state.streak / 5) * 5;
+                
+                elements.score.textContent = state.score;
+                elements.streak.textContent = state.streak;
+                elements.colorWord.classList.add('correct');
+                elements.gameArea.classList.add('flash-correct');
+                
+                // Speed up every 5 correct answers
+                const newSpeed = Math.min(15, 1 + Math.floor(state.streak / 5));
+                if (newSpeed !== state.speed) {
+                    state.speed = newSpeed;
+                    elements.speedLevel.textContent = state.speed;
+                    startTimer();
+                }
+                
+                setTimeout(() => {
+                    elements.colorWord.classList.remove('correct');
+                    elements.gameArea.classList.remove('flash-correct');
+                    nextRound();
+                }, 150);
+            } else {
+                elements.colorWord.classList.add('wrong');
+                elements.gameArea.classList.add('flash-wrong');
+                
+                setTimeout(() => {
+                    elements.colorWord.classList.remove('wrong');
+                    elements.gameArea.classList.remove('flash-wrong');
+                    gameOver();
+                }, 400);
+            }
+        }
+
+        function gameOver() {
+            state.isPlaying = false;
+            clearInterval(state.timerInterval);
+            
+            elements.gameScreen.style.display = 'none';
+            elements.gameOver.style.display = 'block';
+            elements.finalScore.textContent = state.score;
+            
+            if (state.score > state.best) {
+                state.best = state.score;
+                localStorage.setItem('wrongColorBest', state.best);
+                elements.best.textContent = state.best;
+                elements.newHighScore.style.display = 'inline-block';
+            } else {
+                elements.newHighScore.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
